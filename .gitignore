@@ -1,0 +1,31 @@
+# Секреты
+.env
+.env.local
+*.env.local
+vk_user_token.json
+*.pem
+*.key
+
+# Зависимости
+node_modules/
+venv/
+
+# Медиа и загрузки
+media/
+uploads/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Временные файлы
+*.tmp
+*.bak
