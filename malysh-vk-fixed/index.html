@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Нейро-Малыш</title>
+<script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+<link rel="stylesheet" href="style.css?v=50">
+<style>
+@keyframes popIn {
+0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+80% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+@keyframes shakeOpt {
+0%, 100% { transform: translateX(0); }
+25% { transform: translateX(-8px) rotate(-5deg); }
+75% { transform: translateX(8px) rotate(5deg); }
+}
+@keyframes pulse {
+0% { box-shadow: 0 0 0 0 rgba(255, 159, 28, 0.7); }
+70% { box-shadow: 0 0 0 10px rgba(255, 159, 28, 0); }
+100% { box-shadow: 0 0 0 0 rgba(255, 159, 28, 0); }
+}
+.story-menu-card {
+display: flex;
+align-items: center;
+background: #FFFFFF;
+border-radius: 24px;
+padding: 15px 20px;
+width: 100%;
+box-shadow: 0 8px 16px rgba(92, 85, 82, 0.15);
+cursor: pointer;
+transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
+border: 3px solid transparent;
+box-sizing: border-box;
+}
+.story-menu-card:active {
+transform: scale(0.95);
+box-shadow: 0 4px 8px rgba(92, 85, 82, 0.1);
+}
+.story-card-icon {
+font-size: 36px;
+background: #F7F5F0;
+width: 65px;
+height: 65px;
+border-radius: 18px;
+display: flex;
+align-items: center;
+justify-content: center;
+margin-right: 15px;
+flex-shrink: 0;
+}
+.story-card-info {
+display: flex;
+flex-direction: column;
+text-align: left;
+}
+.story-card-title {
+font-size: 18px;
+font-weight: 700;
+color: #5C5552;
+margin-bottom: 4px;
+line-height: 1.2;
+}
+.story-card-subtitle {
+font-size: 13px;
+color: #A09B98;
+font-weight: 500;
+}
+.story-card-rain_walk { border-color: #A3C9D9; }
+.story-card-fun_walk { border-color: #FFD166; }
+.story-card-red_hat { border-color: #FF9F1C; }
+.vip-badge {
+position: absolute;
+top: 10px;
+right: 10px;
+background: linear-gradient(135deg, #B79CED, #8F6FDD);
+color: #fff;
+padding: 5px 12px;
+border-radius: 12px;
+font-size: 11px;
+font-weight: bold;
+letter-spacing: 0.5px;
+box-shadow: 0 3px 8px rgba(143, 111, 221, 0.35);
+}
+.music-mode-btn {
+background-color: rgba(255,255,255,0.5);
+}
+</style>
+</head>
+<body>
+
+<!-- ===== SVG-ИКОНКИ ВМЕСТО ЭМОДЗИ ===== -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+<symbol id="i-left" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-speaker" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 010 7M18.4 5.6a9 9 0 010 12.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3" fill="currentColor"/><path d="M5 10v1a7 7 0 0014 0v-1M12 18v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2" fill="currentColor"/><rect x="13" y="3" width="8" height="8" rx="2" fill="currentColor"/><rect x="3" y="13" width="8" height="8" rx="2" fill="currentColor"/><rect x="13" y="13" width="8" height="8" rx="2" fill="currentColor"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z" fill="currentColor"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></symbol>
+<symbol id="i-rec" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="currentColor"/></symbol>
+<symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></symbol>
+<symbol id="i-game" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10v4M6 12h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="11" r="1.3" fill="currentColor"/><circle cx="18.5" cy="13.5" r="1.3" fill="currentColor"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/><path d="M8 11V7a4 4 0 018 0v4" fill="none" stroke="currentColor" stroke-width="2.5"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M6 6l1 14a2 2 0 002 2h6a2 2 0 002-2l1-14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-repeat" viewBox="0 0 24 24"><path d="M17 2l4 4-4 4M3 11v-1a4 4 0 014-4h14M7 22l-4-4 4-4M21 13v1a4 4 0 01-4 4H3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1" fill="currentColor"/><path d="M5 12v8a1 1 0 001 1h12a1 1 0 001-1v-8M12 8v13" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8s-4.5 0-5.5-2 1-4 3-3 2.5 5 2.5 5zm0 0s4.5 0 5.5-2-1-4-3-3-2.5 5-2.5 5z" fill="currentColor"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 01-8 8H4l2.2-3.2A8 8 0 1121 12z" fill="currentColor"/></symbol>
+<symbol id="i-crown" viewBox="0 0 24 24"><path d="M3 8l4 4 5-6 5 6 4-4v9a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" fill="currentColor"/></symbol>
+</svg>
+
+<div id="help-modal" class="modal-overlay" onclick="closeModal('help-modal', event)">
+<div class="modal-content" onclick="event.stopPropagation()">
+<button class="modal-close" onclick="closeModal('help-modal')">✖</button>
+<h2>О приложении</h2>
+<p>«Нейро-Малыш» — логопедический тренажер.<br><br>Помогайте Уте-Те кормить зверей, раскрашивать картинки и делать весёлые дела!</p>
+<hr style="border: none; border-top: 1px solid #E8EBF0; margin: 20px 0;">
+<div class="legal-info">
+Продавец: Самозанятая Селяхова Н.В.<br>
+ИНН: 502209781184<br>
+Email: holljs@mail.ru
+</div>
+<a href="https://vk.com/neiro_malish" target="_blank" style="display: block; background-color: #0077FF; color: white; padding: 12px; border-radius: 12px; text-decoration: none; text-align: center; font-weight: bold; font-size: 16px; margin-top: 15px;"><svg class="ic"><use href="#i-chat"/></svg> Написать разработчику</a>
+</div>
+</div>
+
+<div id="paywall-modal" class="modal-overlay" onclick="closeModal('paywall-modal', event)">
+<div class="modal-content" onclick="event.stopPropagation()">
+<button class="modal-close" onclick="closeModal('paywall-modal')">✖</button>
+<h2 style="color: #FFB347; font-size: 24px;"><svg class="ic"><use href="#i-crown"/></svg> Открой все игры!</h2>
+<p style="font-size: 16px; margin: 10px 0; color: #5C5552;">Доступ навсегда всего за <b>290 руб.</b><br><small style="color: #A09B98;">Без подписок и автосписаний!</small></p>
+<button class="wind-start-btn" style="background-color: #FFB347; width: 100%; margin-top: 10px;" onclick="goToPayment()">Купить навсегда</button>
+<div style="margin-top: 15px; padding: 12px; background: linear-gradient(135deg, #FFF3D6, #FFE8B8); border-radius: 12px; text-align: center;">
+  <div style="font-size: 14px; color: #5C5552; margin-bottom: 8px;">🎁 Или получи <b>7 дней БЕСПЛАТНО</b></div>
+  <a href="#" onclick="subscribeToGroup();return false;" style="color: #0077FF; font-weight: bold; font-size: 14px; text-decoration: none;">Подписаться на рассылку →</a>
+</div>
+<button class="clear-btn" style="width: 100%; margin-top: 15px; background: transparent; font-weight: normal;" onclick="closeModal('paywall-modal')">Позже</button>
+</div>
+</div>
+
+<div id="mobile-paywall-modal" class="modal-overlay" onclick="closeModal('mobile-paywall-modal', event)">
+<div class="modal-content" onclick="event.stopPropagation()">
+<button class="modal-close" onclick="closeModal('mobile-paywall-modal')">✖</button>
+<h2 style="color: #FFB347; font-size: 24px;"><svg class="ic"><use href="#i-lock"/></svg> Комната закрыта</h2>
+<p style="margin-top: 15px; color: #7A90A4; font-size: 16px; line-height: 1.4;">Для получения информации о полном доступе свяжитесь с администратором.</p>
+<div style="margin: 15px 0; padding: 12px; background: linear-gradient(135deg, #FFF3D6, #FFE8B8); border-radius: 12px; text-align: center;">
+  <div style="font-size: 14px; color: #5C5552; margin-bottom: 8px;">🎁 Или открой комнаты на <b>7 дней БЕСПЛАТНО</b></div>
+  <a href="#" onclick="subscribeToGroup();return false;" style="color: #0077FF; font-weight: bold; font-size: 14px; text-decoration: none;">Подписаться на рассылку →</a>
+</div>
+<a href="https://vk.com/neiro_malish" target="_blank" style="display: block; background-color: #0077FF; color: white; padding: 12px; border-radius: 12px; text-decoration: none; text-align: center; font-weight: bold; font-size: 16px; margin-top: 10px;"><svg class="ic"><use href="#i-chat"/></svg> Написать администратору</a>
+</div>
+</div>
+
+<div id="bonus-success-modal" class="modal-overlay" onclick="closeModal('bonus-success-modal', event)">
+<div class="modal-content" onclick="event.stopPropagation()">
+<button class="modal-close" onclick="closeModal('bonus-success-modal')">✖</button>
+<h2 style="color: #FFB347; font-size: 24px;"><svg class="ic"><use href="#i-star"/></svg> Ура!</h2>
+<p style="margin-top: 15px; color: #7A90A4; font-size: 16px; line-height: 1.4;">
+Подписка оформлена! 🎉<br><br>
+Тебе выдан <b>VIP-доступ на 7 дней</b> ко всем играм. Замочки сняты — играй во что хочешь!
+</p>
+<button onclick="closeModal('bonus-success-modal')" style="display: block; width: 100%; background-color: #0077FF; color: white; padding: 14px; border-radius: 12px; border: none; font-weight: bold; font-size: 16px; margin-top: 20px; cursor: pointer;">
+<svg class="ic"><use href="#i-play"/></svg> Начать играть!
+</button>
+</div>
+</div>
+
+<div id="screen-menu" class="screen active">
+<div class="header" style="justify-content: center;">
+<div class="header-title-row">
+<div class="help-icon" onclick="openModal('help-modal')">?</div>
+<span style="font-size: 20px; font-weight: 600; color: #7A90A4;">Нейро-Малыш</span>
+</div>
+</div>
+<div class="hero-title">Во что поиграем?</div>
+
+<div id="vip-bonus-banner" onclick="subscribeToGroup()" style="display: none; background: linear-gradient(135deg, #FFD166, #FF9F1C); border-radius: 15px; padding: 15px; text-align: center; color: white; font-weight: bold; font-size: 16px; margin: 10px 15px 20px 15px; box-shadow: 0 4px 10px rgba(255, 159, 28, 0.3); cursor: pointer; animation: pulse 2s infinite;">
+<svg class="ic"><use href="#i-gift"/></svg> Нажми сюда, чтобы получить VIP на 7 дней!
+</div>
+
+<div class="menu-grid">
+<div class="category-card cat-bs" onclick="openRoom('big_small', 'Большой - Маленький')">
+<div class="category-icon-placeholder"><img src="icon_bs.png" alt=""></div>
+<div class="category-title">Большой - Маленький</div>
+</div>
+
+<div class="category-card cat-animals" onclick="openRoom('animals', 'Животные')">
+<div class="category-icon-placeholder"><img src="icon_animals.png" alt=""></div>
+<div class="category-title">Животные</div>
+</div>
+
+<div class="category-card cat-colors" onclick="openRoom('colors', 'Цвета')">
+<div class="category-icon-placeholder"><img src="icon_colors.png" alt=""></div>
+<div class="category-title">Цвета</div>
+</div>
+
+<div class="category-card cat-shapes" onclick="openRoom('shapes', 'Фигуры')">
+<div class="category-icon-placeholder"><img src="icon_shapes.png" alt=""></div>
+<div class="category-title">Фигуры</div>
+</div>
+
+<div class="category-card cat-draw" onclick="openRoom('draw', 'Раскраски')">
+<div class="category-icon-placeholder"><img src="icon_draw.png" alt=""></div>
+<div class="category-title">Раскраски</div>
+</div>
+
+<div class="category-card cat-feed" onclick="openRoom('feeding', 'Кто что ест?')">
+<div class="category-icon-placeholder"><img src="icon_feeding.png" alt=""></div>
+<div class="category-title">Кто что ест?</div>
+</div>
+
+<div class="category-card cat-wants" onclick="openRoom('wants', 'Желания')">
+<div class="category-icon-placeholder"><img src="icon_wants.png" alt=""></div>
+<div class="category-title">Желания</div>
+</div>
+
+<div class="category-card cat-letters" onclick="openRoom('letters', 'Буквы')">
+<div class="category-icon-placeholder"><img src="icon_letters.png" alt=""></div>
+<div class="category-title">Буквы</div>
+</div>
+
+<div class="category-card cat-numbers" onclick="openRoom('numbers', 'Цифры')">
+<div class="category-icon-placeholder"><img src="icon_numbers.png" alt=""></div>
+<div class="category-title">Цифры</div>
+</div>
+
+<div class="category-card cat-wind" onclick="openRoom('actions', 'Утя действует')">
+<div class="category-icon-placeholder"><img src="icon_actions.png" alt=""></div>
+<div class="category-title">Утя действует</div>
+</div>
+
+<div class="category-card cat-garden" onclick="openRoom('garden', 'Счёт 1-9')">
+<div class="category-icon-placeholder"><img src="icon_garden.png" alt=""></div>
+<div class="category-title">Счёт 1-9</div>
+</div>
+
+<div class="category-card cat-poems" onclick="openRoom('poems', 'Стихи')">
+<div class="category-icon-placeholder"><img src="icon_poems.png" alt=""></div>
+<div class="category-title">Стихи-Рифмы</div>
+</div>
+
+<div class="category-card cat-yesno" onclick="openRoom('yesno', 'Да или Нет')">
+<div class="category-icon-placeholder"><img src="icon_yesno.png" alt=""></div>
+<div class="category-title">Да или Нет</div>
+</div>
+
+<div class="category-card cat-words" onclick="openRoom('words', 'Слоги-Пазлы')">
+<div class="category-icon-placeholder"><img src="icon_words.png" alt=""></div>
+<div class="category-title">Слоги</div>
+</div>
+
+<div class="category-card cat-story" onclick="openRoom('story', 'Сказки')">
+<div class="category-icon-placeholder"><img src="icon_story.png" alt=""></div>
+<div class="category-title">Сказки</div>
+</div>
+
+<div class="category-card cat-breeze" onclick="openRoom('wind', 'Ветерок')">
+<div class="category-icon-placeholder"><img src="icon_wind.png" alt=""></div>
+<div class="category-title">Ветерок</div>
+</div>
+
+<div class="category-card cat-music" onclick="openRoom('music', 'Волшебное Пианино')">
+<div class="category-icon-placeholder"><img src="icon_piano.png" alt=""></div>
+<div class="category-title">Пианино</div>
+</div>
+
+<div class="category-card cat-tongue" onclick="openRoom('tongue', 'Скороговорки')">
+<div class="category-icon-placeholder"><img src="icon_tongue.png" alt=""></div>
+<div class="category-title">Скороговорки</div>
+</div>
+</div>
+</div>
+
+<div id="screen-room" class="screen">
+<div class="header">
+<div class="header-title-row"><span id="room-title">Комната</span></div>
+<div class="header-top">
+<div style="display:flex; gap:8px;">
+<div class="back-btn" onclick="goHome()"><svg class="ic"><use href="#i-back"/></svg> Назад</div>
+<div class="back-btn" id="replayBtn" onclick="replayLastSound()" style="background:#FFF3E0; color:#FF9F1C; font-weight:700;"><svg class="ic"><use href="#i-speaker"/></svg> Ещё раз</div>
+</div>
+<div class="quiz-toggle" id="quizToggle" onclick="toggleQuiz()"><svg class="ic"><use href="#i-game"/></svg> Игра</div>
+</div>
+</div>
+
+<div class="room-content-area">
+<div id="learning-area" class="learning-mode"></div>
+<div id="quiz-area" class="quiz-mode"></div>
+<div id="wants-area" class="wants-mode"></div>
+
+<div id="game-area" class="game-container">
+<div class="drag-column" id="drag-zone"></div>
+<div class="target-column" id="target-zone"></div>
+</div>
+
+<div id="bs-area" class="bs-container" style="position: relative;">
+<div style="position: absolute; top: 50%; left: 0; right: 0; transform: translateY(-50%); display: flex; justify-content: space-between; padding: 0 6px; pointer-events: none; z-index: 20;">
+<div class="nav-btn" onclick="prevBigSmall()" style="pointer-events: auto; width: 45px; height: 45px; font-size: 20px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.9); border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer;"><svg class="ic"><use href="#i-left"/></svg></div>
+<div class="nav-btn" onclick="nextBigSmall()" style="pointer-events: auto; width: 45px; height: 45px; font-size: 20px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.9); border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer;"><svg class="ic"><use href="#i-right"/></svg></div>
+</div>
+<div id="bs-drag-zone" class="bs-left-side"></div>
+<div class="bs-right-side">
+<div class="bs-box-wrapper">
+<img src="box.png" class="bs-box bs-box-big target-item" data-size="big">
+</div>
+<div class="bs-box-wrapper">
+<img src="box.png" class="bs-box bs-box-small target-item" data-size="small">
+</div>
+</div>
+</div>
+
+<div id="garden-area" class="garden-container" style="display: none; width: 100%; height: 100%; background-size: cover; background-position: center top; border-radius: 15px; overflow: hidden; flex-direction: column; justify-content: flex-end; padding-bottom: 20px; position: relative;">
+<div style="position: absolute; top: 30%; left: 0; right: 0; transform: translateY(-50%); display: flex; justify-content: space-between; padding: 0 10px; pointer-events: none; z-index: 20;">
+<div class="nav-btn" onclick="prevGarden()" style="pointer-events: auto; width: 45px; height: 45px; font-size: 20px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.9); border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer;"><svg class="ic"><use href="#i-left"/></svg></div>
+<div class="nav-btn" onclick="nextGarden()" style="pointer-events: auto; width: 45px; height: 45px; font-size: 20px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.9); border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer;"><svg class="ic"><use href="#i-right"/></svg></div>
+</div>
+<div id="garden-targets" style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; padding: 10px; margin: 0 auto 15px auto; width: 96%; max-width: 620px;"></div>
+<div id="garden-drags" style="width: 96%; max-width: 640px; margin: 0 auto; min-height: 100px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; background: rgba(255,255,255,0.8); border-radius: 20px; padding: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);"></div>
+</div>
+
+<div id="poems-area" style="display: none; width: 100%; height: 100%; background-size: cover; background-position: center top; border-radius: 15px; overflow: hidden; flex-direction: column; justify-content: flex-end; padding-bottom: 25px; position: relative;">
+<div style="position: absolute; top: 35%; left: 0; right: 0; transform: translateY(-50%); display: flex; justify-content: space-between; padding: 0 10px; pointer-events: none; z-index: 20;">
+<div class="nav-btn" onclick="prevPoem()" style="pointer-events: auto; width: 45px; height: 45px; font-size: 20px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.9); border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer;"><svg class="ic"><use href="#i-left"/></svg></div>
+<div class="nav-btn" onclick="nextPoem()" style="pointer-events: auto; width: 45px; height: 45px; font-size: 20px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.9); border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer;"><svg class="ic"><use href="#i-right"/></svg></div>
+</div>
+<img id="poem-success-img" src="" style="display: none; position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 160px; height: 160px; object-fit: contain; animation: popIn 0.5s ease-out; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3)); z-index: 10;">
+<div id="poem-options" style="width: 92%; margin: 0 auto; min-height: 110px; display: flex; flex-wrap: wrap; justify-content: space-around; align-items: center; gap: 10px; background: rgba(255,255,255,0.85); border-radius: 20px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative; z-index: 30;"></div>
+</div>
+
+<div id="yesno-area" style="display: none; width: 100%; height: 100%; background-size: cover; background-position: center top; border-radius: 15px; overflow: hidden; flex-direction: column; justify-content: flex-end; padding-bottom: 30px; position: relative;">
+<div style="position: absolute; top: 35%; left: 0; right: 0; transform: translateY(-50%); display: flex; justify-content: space-between; padding: 0 10px; pointer-events: none; z-index: 20;">
+<div class="nav-btn" onclick="prevYesNo()" style="pointer-events: auto; width: 45px; height: 45px; font-size: 20px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.9); border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer;"><svg class="ic"><use href="#i-left"/></svg></div>
+<div class="nav-btn" onclick="nextYesNo()" style="pointer-events: auto; width: 45px; height: 45px; font-size: 20px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.9); border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer;"><svg class="ic"><use href="#i-right"/></svg></div>
+</div>
+<div style="display: flex; justify-content: center; gap: 35px; z-index: 30;">
+<button id="btn-yes" onclick="handleYesNoClick('yes')" style="width: 110px; height: 110px; border-radius: 50%; background-color: #4CAF50; border: 8px solid #FFFFFF; box-shadow: 0 8px 15px rgba(0,0,0,0.2); font-size: 55px; color: white; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; outline: none; font-weight: bold;">✓</button>
+<button id="btn-no" onclick="handleYesNoClick('no')" style="width: 110px; height: 110px; border-radius: 50%; background-color: #F44336; border: 8px solid #FFFFFF; box-shadow: 0 8px 15px rgba(0,0,0,0.2); font-size: 55px; color: white; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; outline: none; font-weight: bold;">✖</button>
+</div>
+</div>
+
+<div id="words-area" style="display: none; width: 100%; height: 100%; background: #FFFDE7; border-radius: 15px; overflow: hidden; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px 10px 25px 10px; box-sizing: border-box; position: relative;">
+<div style="position: absolute; top: 40%; left: 0; right: 0; transform: translateY(-50%); display: flex; justify-content: space-between; padding: 0 10px; pointer-events: none; z-index: 20;">
+<div class="nav-btn" onclick="prevWordsLevel()" style="pointer-events: auto; width: 45px; height: 45px; font-size: 20px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.9); border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer;"><svg class="ic"><use href="#i-left"/></svg></div>
+<div class="nav-btn" onclick="nextWordsLevel()" style="pointer-events: auto; width: 45px; height: 45px; font-size: 20px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.9); border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer;"><svg class="ic"><use href="#i-right"/></svg></div>
+</div>
+<div id="words-shadow-board" style="position: relative; width: 260px; height: 260px; margin-top: 15px; display: flex; justify-content: center; align-items: center; background: transparent;"></div>
+<div id="words-dock" style="width: 95%; min-height: 125px; display: flex; justify-content: center; align-items: center; gap: 15px; background: rgba(255,255,255,0.9); border-radius: 20px; padding: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; z-index: 30; margin-bottom: 5px;"></div>
+</div>
+
+<div id="draw-area" class="draw-container">
+<div class="draw-nav">
+<div class="nav-btn" onclick="changeDrawImage(-1)" style="width:40px; height:40px; font-size:18px;"><svg class="ic"><use href="#i-left"/></svg></div>
+<div class="draw-title" id="draw-image-title"></div>
+<div class="nav-btn" onclick="changeDrawImage(1)" style="width:40px; height:40px; font-size:18px;"><svg class="ic"><use href="#i-right"/></svg></div>
+</div>
+<div class="canvas-wrapper">
+<canvas id="paintCanvas"></canvas>
+<img id="contourImage" src="kitten.jpg" draggable="false">
+</div>
+<div class="palette">
+<div class="color-btn active" style="background:#FF4D4D" onclick="setBrushColor('#FF4D4D', 'color_red', this)"></div>
+<div class="color-btn" style="background:#4D79FF" onclick="setBrushColor('#4D79FF', 'color_blue', this)"></div>
+<div class="color-btn" style="background:#FFD700" onclick="setBrushColor('#FFD700', 'color_yellow', this)"></div>
+<div class="color-btn" style="background:#4DFF4D" onclick="setBrushColor('#4DFF4D', 'color_green', this)"></div>
+<div class="color-btn" style="background:#FFA500" onclick="setBrushColor('#FFA500', 'color_orange', this)"></div>
+<div class="color-btn" style="background:#9932CC" onclick="setBrushColor('#9932CC', 'color_purple', this)"></div>
+<div class="color-btn" style="background:#FF69B4" onclick="setBrushColor('#FF69B4', 'color_pink', this)"></div>
+<div class="color-btn" style="background:#8B4513" onclick="setBrushColor('#8B4513', 'color_brown', this)"></div>
+<button class="clear-btn" onclick="clearDrawCanvas()"><svg class="ic"><use href="#i-trash"/></svg> Стереть всё</button>
+</div>
+</div>
+
+<div id="wind-area" class="wind-container" style="display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+<div class="wind-instruction" id="wind-instruction" style="font-size: 20px; font-weight: bold; color: #7A90A4; margin-bottom: 20px;">Нажми кнопку и подуй!</div>
+<img src="wind_spinner.png" id="wind-spinner" class="wind-spinner" style="width: 150px; height: 150px; transition: transform 0.1s linear;">
+<div class="wind-start-btn" id="wind-start-btn" onclick="startWindGame()" style="margin-top: 30px; background-color: #0077FF; color: white; padding: 15px 30px; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer;"><svg class="ic"><use href="#i-mic"/></svg> Включить микрофон</div>
+</div>
+
+<div id="story-area" class="story-container" style="display: none; width: 100%; height: 100%; position: relative; background-size: cover; background-position: center;">
+<div id="story-ui" style="display: flex; gap: 20px; position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 10; align-items: center; justify-content: center; flex-wrap: wrap;"></div>
+</div>
+
+<div id="music-area" class="music-container" style="display: none; flex-direction: column; align-items: center; justify-content: space-between; width: 100%; height: 100%; padding-bottom: 20px; background: #FFFDE7; border-radius: 15px; box-sizing: border-box;">
+<div id="music-modes" style="display: flex; gap: 15px; margin-top: 20px; z-index: 10; background: rgba(255,255,255,0.8); padding: 10px 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+<div id="mode-btn-piano" class="music-mode-btn" style="width:60px; height:60px; border-radius:15px; cursor:pointer; display:flex; justify-content:center; align-items:center; transition:0.2s;" onclick="setMusicMode('piano')"><img src="mode_piano.png" style="width:80%; pointer-events:none;"></div>
+<div id="mode-btn-cat" class="music-mode-btn" style="width:60px; height:60px; border-radius:15px; cursor:pointer; display:flex; justify-content:center; align-items:center; transition:0.2s;" onclick="setMusicMode('cat')"><img src="mode_cat.png" style="width:80%; pointer-events:none;"></div>
+<div id="mode-btn-dog" class="music-mode-btn" style="width:60px; height:60px; border-radius:15px; cursor:pointer; display:flex; justify-content:center; align-items:center; transition:0.2s;" onclick="setMusicMode('dog')"><img src="mode_dog.png" style="width:80%; pointer-events:none;"></div>
+<div id="mode-btn-radio" class="music-mode-btn" style="width:60px; height:60px; border-radius:15px; cursor:pointer; display:flex; justify-content:center; align-items:center; transition:0.2s;" onclick="setMusicMode('radio')"><img src="mode_radio.png" style="width:80%; pointer-events:none;"></div>
+</div>
+<div style="width: 95%; height: 45%; background: linear-gradient(to bottom, #7b4a2b, #4a2912); border-radius: 15px; padding: 15px 10px; box-shadow: inset 0 15px 20px rgba(0,0,0,0.4), 0 10px 20px rgba(0,0,0,0.3); display: flex; align-items: flex-start; justify-content: center; box-sizing: border-box; margin-bottom: 20px;">
+<div id="piano-keys" style="width: 100%; height: 95%; display: flex; gap: 4px; padding-top: 5px;"></div>
+</div>
+</div>
+
+<!-- ===== КОМНАТА СКОРОГОВОРКИ ===== -->
+<div id="tongue-area" style="display: none; width: 100%; height: 100%; border-radius: 15px; overflow: hidden; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 25px; position: relative; background: #FFFDE7;">
+<div style="position: absolute; top: 35%; left: 0; right: 0; transform: translateY(-50%); display: flex; justify-content: space-between; padding: 0 10px; pointer-events: none; z-index: 20;">
+<div class="nav-btn" onclick="prevTongue()" style="pointer-events: auto; width: 45px; height: 45px; font-size: 20px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.9); border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer;"><svg class="ic"><use href="#i-left"/></svg></div>
+<div class="nav-btn" onclick="nextTongue()" style="pointer-events: auto; width: 45px; height: 45px; font-size: 20px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.9); border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer;"><svg class="ic"><use href="#i-right"/></svg></div>
+</div>
+<div id="tongue-back-btn" onclick="showTongueMenu()" style="display: none; position: absolute; top: 12px; right: 12px; z-index: 25; background: rgba(255,255,255,0.9); border-radius: 12px; padding: 8px 14px; font-size: 14px; font-weight: 600; color: #7A90A4; cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,0.15);"><svg class="ic"><use href="#i-grid"/></svg> Разделы</div>
+<div id="tongue-card" onclick="playCurrentTongue()" style="display: none; width: 85%; max-width: 340px; background: #FFFFFF; border-radius: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.12); padding: 20px; text-align: center; cursor: pointer; margin-bottom: 10px;">
+<img id="tongue-img" src="" style="width: 100%; max-height: 36vh; object-fit: contain; pointer-events: none;">
+<div id="tongue-word" style="font-size: 34px; font-weight: 800; letter-spacing: 2px; color: #FF9F1C; margin-top: 10px; pointer-events: none;"></div>
+</div>
+<div id="tongue-prompt" style="display: none; font-size: 22px; font-weight: bold; color: #FF9F1C; margin-bottom: 10px; animation: popIn 0.5s ease-out;"><svg class="ic"><use href="#i-speaker"/></svg> Повтори!</div>
+<div id="tongue-menu" style="width: 90%; max-width: 400px; display: none; flex-direction: column; gap: 20px; margin-bottom: 20px;"></div>
+<div id="tongue-controls" style="display: none; gap: 15px;">
+<div onclick="playCurrentTongue()" style="background: #FFFFFF; border-radius: 15px; padding: 12px 20px; font-size: 16px; font-weight: bold; color: #5C5552; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1);"><svg class="ic"><use href="#i-speaker"/></svg> Ещё раз</div>
+<div id="tongue-mic-btn" onclick="startTongueMic()" style="background: #FFD166; border-radius: 15px; padding: 12px 20px; font-size: 16px; font-weight: bold; color: #5C5552; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1);"><svg class="ic"><use href="#i-mic"/></svg> Утя слушает</div>
+</div>
+<div id="tongue-star" style="display: none; position: absolute; top: 38%; left: 50%; transform: translate(-50%,-50%); animation: popIn 0.5s ease-out; z-index: 30; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.25));"><svg class="ic" style="width:100px;height:100px;color:#FFD700;margin:0;"><use href="#i-star"/></svg></div>
+</div>
+
+</div> </div> <script src="script.js?v=64"></script>
+</body>
+</html>
